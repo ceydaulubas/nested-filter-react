@@ -5,6 +5,7 @@ const Filter = ({ tasks, setFilteredTasks }) => {
     const [selectedCondition, setSelectedCondition] = useState('');
     const [selectedValue, setSelectedValue] = useState('');
     const [filters, setFilters] = useState([]);
+    const [filterOperation, setFilterOperation] = useState('and');
 
     const handleOptionChange = (e) => {
         setSelectedOption(e.target.value);
@@ -36,9 +37,14 @@ const Filter = ({ tasks, setFilteredTasks }) => {
         applyFilters(newFilters);
     };
 
+    const handleFilterOperationChange = (e) => {
+        setFilterOperation(e.target.value);
+        applyFilters(filters);
+    };
+
     const applyFilters = (filtersToApply) => {
         const newFilteredTasks = tasks.filter((task) => {
-            return filtersToApply.every((filter) => {
+            const filterResults = filtersToApply.map((filter) => {
                 let condition = false;
 
                 switch (filter.condition) {
@@ -54,6 +60,8 @@ const Filter = ({ tasks, setFilteredTasks }) => {
 
                 return condition;
             });
+
+            return filterOperation === 'and' ? filterResults.every((result) => result) : filterResults.some((result) => result);
         });
 
         setFilteredTasks(newFilteredTasks);
@@ -127,11 +135,20 @@ const Filter = ({ tasks, setFilteredTasks }) => {
                         </select>
                     )}
                 </div>
+                <div className="row my-3">
+                    <div className="col-sm-12 col-md-4 mb-3">
+                        <select className="form-select" value={filterOperation} onChange={handleFilterOperationChange}>
+                            <option value="and">And</option>
+                            <option value="or">Or</option>
+                        </select>
+                    </div>
+                </div>
                 <div className="col-12">
                     <button className="btn btn-primary mt-2" onClick={handleAddFilter} disabled={!selectedOption || !selectedCondition || !selectedValue}>
                         Add Filter
                     </button>
                 </div>
+
             </div>
         </>
     )

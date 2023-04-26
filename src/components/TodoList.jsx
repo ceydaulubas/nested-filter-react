@@ -10,7 +10,7 @@ const TodoList = () => {
             <Filter tasks={todoData.tasks} setFilteredTasks={setFilteredTasks} />
 
             <div className="row">
-                {todoData.tasks.map((task) => (
+                {filteredTasks.map((task) => (
                     <div className="col-sm-12 col-md-6 col-lg-4" key={task.id}>
                         <div className={`card mb-4 border-${task.priority}`}>
                             <div className="card-body">

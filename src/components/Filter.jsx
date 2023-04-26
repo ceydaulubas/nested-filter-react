@@ -1,132 +1,141 @@
 import React, { useState } from 'react';
 
 const Filter = ({ tasks, setFilteredTasks }) => {
-    const [filterGroups, setFilterGroups] = useState([{ tag: '', priority: '', dueDate: '', status: '' }]);
+    const [selectedOption, setSelectedOption] = useState('');
+    const [selectedCondition, setSelectedCondition] = useState('');
+    const [selectedValue, setSelectedValue] = useState('');
+    const [filters, setFilters] = useState([]);
 
-    const handleFilterChange = (index, field, value) => {
-        const newFilterGroups = [...filterGroups];
-        newFilterGroups[index][field] = value;
-        setFilterGroups(newFilterGroups);
+    const handleOptionChange = (e) => {
+        setSelectedOption(e.target.value);
+        setSelectedCondition('');
+        setSelectedValue('');
     };
 
-    const handleAddFilterGroup = () => {
-        setFilterGroups([...filterGroups, { tag: '', priority: '', dueDate: '', status: '' }]);
+    const handleConditionChange = (e) => {
+        setSelectedCondition(e.target.value);
+        setSelectedValue('');
     };
 
-    const handleRemoveFilterGroup = (index) => {
-        const newFilterGroups = [...filterGroups];
-        newFilterGroups.splice(index, 1);
-        setFilterGroups(newFilterGroups);
+    const handleValueChange = (e) => {
+        setSelectedValue(e.target.value);
     };
 
-    const handleApplyFilter = () => {
-        let filteredTasks = [...tasks];
+    const handleAddFilter = () => {
+        const newFilters = [...filters, { option: selectedOption, condition: selectedCondition, value: selectedValue }];
+        setFilters(newFilters);
+        applyFilters(newFilters);
+        setSelectedOption('');
+        setSelectedCondition('');
+        setSelectedValue('');
+    };
 
-        filterGroups.forEach((filterGroup) => {
-            filteredTasks = filteredTasks.filter((task) => {
-                let match = true;
+    const removeFilter = (index) => {
+        const newFilters = filters.filter((_, i) => i !== index);
+        setFilters(newFilters);
+        applyFilters(newFilters);
+    };
 
-                if (filterGroup.tag) {
-                    match = match && task.tag === filterGroup.tag;
-                }
-                if (filterGroup.priority) {
-                    match = match && task.priority === filterGroup.priority;
-                }
-                if (filterGroup.dueDate) {
-                    // TODO: implement due date filtering logic
-                }
-                if (filterGroup.status) {
-                    match = match && task.status === filterGroup.status;
+    const applyFilters = (filtersToApply) => {
+        const newFilteredTasks = tasks.filter((task) => {
+            return filtersToApply.every((filter) => {
+                let condition = false;
+
+                switch (filter.condition) {
+                    case 'is':
+                        condition = task[filter.option] === filter.value;
+                        break;
+                    case 'isNot':
+                        condition = task[filter.option] !== filter.value;
+                        break;
+                    default:
+                        break;
                 }
 
-                return match;
+                return condition;
             });
         });
 
-        setFilteredTasks(filteredTasks);
+        setFilteredTasks(newFilteredTasks);
     };
 
     return (
-        <div className="my-3 p-3 bg-white rounded shadow-sm">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h6 className="mb-0">Filters</h6>
-                <button className="btn btn-sm btn-primary" onClick={handleApplyFilter}>
-                    Apply Filter
-                </button>
+        <>
+            <div className="row my-3">
+                {filters.map((filter, index) => (
+                    <div className="col-auto" key={index}>
+                        <span className="badge bg-danger" onClick={() => removeFilter(index)}>
+                            {`${filter.option} ${filter.condition} ${filter.value}`}
+                            <span className="ms-2" style={{ cursor: 'pointer' }}>&times;</span>
+                        </span>
+                    </div>
+                ))}
             </div>
-
-            {filterGroups.map((filterGroup, index) => (
-                <div key={index} className="border rounded p-3 mb-3">
-                    <div className="d-flex justify-content-end">
-                        <button className="btn btn-sm btn-danger" onClick={() => handleRemoveFilterGroup(index)}>
-                            Remove Filter
-                        </button>
-                    </div>
-
-                    <div className="row">
-                        <div className="col-md-3">
-                            <div className="mb-3">
-                                <label className="form-label">Tag</label>
-                                <select className="form-select" value={filterGroup.tag} onChange={(e) => handleFilterChange(index, 'tag', e.target.value)}>
-                                    <option value="">--Select--</option>
-                                    <option value="tag1">Tag 1</option>
-                                    <option value="tag2">Tag 2</option>
-                                    <option value="tag3">Tag 3</option>
-                                    <option value="tag4">Tag 4</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="col-md-3">
-                            <div className="mb-3">
-                                <label className="form-label">Priority</label>
-                                <select className="form-select" value={filterGroup.priority} onChange={(e) => handleFilterChange(index, 'priority', e.target.value)}>
-                                    <option value="">--Select--</option>
-                                    <option value="Urgent">Urgent</option>
-                                    <option value="High">High</option>
-                                    <option value="Normal">Normal</option>
-                                    <option value="Low">Low</option>
-                                    <option value="NonPriority">Non Priority</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div className="col-md-3">
-                            <div className="mb-3">
-                                <label className="form-label">Due Date</label>
-                                <select className="form-select" value={filterGroup.dueDate} onChange={(e) => handleFilterChange(index, 'dueDate', e.target.value)}>
-                                    <option value="">--Select--</option>
-                                    <option value="today">Today</option>
-                                    <option value="yesterday">Yesterday</option>
-                                    <option value="tomorrow">Tomorrow</option>
-                                    <option value="next7">Next 7 Days</option>
-                                    <option value="last7">Last 7 Days</option>
-                                    <option value="thisWeek">This Week</option>
-                                    <option value="lastWeek">Last Week</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="col-md-3">
-                            <div className="mb-3">
-                                <label className="form-label">Status</label>
-                                <select className="form-select" value={filterGroup.status} onChange={(e) => handleFilterChange(index, 'status', e.target.value)}>
-                                    <option value="">--Select--</option>
-                                    <option value="Active">Active</option>
-                                    <option value="Closed">Closed</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+            <div className="row my-3">
+                <div className="col-sm-12 col-md-4 mb-3">
+                    <select className="form-select" value={selectedOption} onChange={handleOptionChange}>
+                        <option value="">Select an option...</option>
+                        <option value="tag">Tag</option>
+                        <option value="priority">Priority</option>
+                        <option value="dueDate">Due date</option>
+                        <option value="status">Status</option>
+                    </select>
                 </div>
-            ))}
-
-            <div className="d-flex justify-content-end">
-                <button className="btn btn-sm btn-secondary" onClick={handleAddFilterGroup}>
-                    Add Filter
-                </button>
+                <div className="col-sm-12 col-md-4 mb-3">
+                    <select className="form-select" value={selectedCondition} onChange={handleConditionChange} disabled={!selectedOption}>
+                        <option value="">Select a condition...</option>
+                        <option value="is">is</option>
+                        <option value="isNot">is not</option>
+                    </select>
+                </div>
+                <div className="col-sm-12 col-md-4 mb-3">
+                    {selectedOption === 'tag' && (
+                        <select className="form-select" value={selectedValue} onChange={handleValueChange} disabled={!selectedCondition}>
+                            <option value="">Select a tag...</option>
+                            <option value="tag1">Tag1</option>
+                            <option value="tag2">Tag2</option>
+                            <option value="tag3">Tag3</option>
+                        </select>
+                    )}
+                    {selectedOption === 'priority' && (
+                        <select className="form-select" value={selectedValue} onChange={handleValueChange} disabled={!selectedCondition}>
+                            <option value="">Select a priority...</option>
+                            <option value="Urgent">Urgent</option>
+                            <option value="High">High</option>
+                            <option value="Normal">Normal</option>
+                            <option value="Low">Low</option>
+                            <option value="NonPriority">Non Priority</option>
+                        </select>
+                    )}
+                    {selectedOption === 'dueDate' && (
+                        <select className="form-select" value={selectedValue} onChange={handleValueChange} disabled={!selectedCondition}>
+                            <option value="">Select a dueDate...</option>
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="tomorrow">Tomorrow</option>
+                            <option value="next7">Next 7 Days</option>
+                            <option value="last7">Last 7 Days</option>
+                            <option value="thisWeek">This Week</option>
+                            <option value="lastWeek">Last Week</option>
+                        </select>
+                    )}
+                    {selectedOption === 'status' && (
+                        <select className="form-select" value={selectedValue} onChange={handleValueChange} disabled={!selectedCondition}>
+                            <option value="">Select a status...</option>
+                            <option value="Active">Active</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    )}
+                </div>
+                <div className="col-12">
+                    <button className="btn btn-primary mt-2" onClick={handleAddFilter} disabled={!selectedOption || !selectedCondition || !selectedValue}>
+                        Add Filter
+                    </button>
+                </div>
             </div>
-        </div>
-    );
-};
+        </>
+    )
+}
 
 export default Filter;
+

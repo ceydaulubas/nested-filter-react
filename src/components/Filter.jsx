@@ -37,7 +37,7 @@ const Filter = ({ tasks, setFilteredTasks }) => {
     };
 
     const handleAddGroup = () => {
-        if (filterGroups.length < 4) {
+        if (filterGroups.length < 4 && filterGroups.every((group) => group.filters.length > 0)) {
             setFilterGroups([...filterGroups, { filters: [], filterOperation: 'and', subGroups: [] }]);
         }
     };
@@ -48,7 +48,7 @@ const Filter = ({ tasks, setFilteredTasks }) => {
                 return { ...group, filters: group.filters.filter((_, i) => i !== filterIndex) };
             }
             return group;
-        });
+        }).filter((group, index) => index === 0 || group.filters.length > 0);
         setFilterGroups(updatedFilterGroups);
         applyFilters(updatedFilterGroups);
     };
